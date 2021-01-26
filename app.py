@@ -8,6 +8,13 @@ DATABASE
 """
 
 # SQL CONNECTION goes here
+# db_engine = create_engine('sqlite://username:password/database.db')
+db_engine = create_engine('sqlite:///database.db')
+db_tables = db_engine.table_names()
+print('Tables', db_tables)
+
+Session = sessionmaker(bind=db_engine)
+session = Session()
 
 """
 CLASSES
@@ -17,6 +24,19 @@ CLASSES
 Base = declarative_base()
 
 # PRODUCT CLASS goes here
+# table name must match DB table name exactly!!
+class Product(Base):
+    __tablename__ = 'products'
+    id = Column(Integer, primary_key = True)
+    name = Column(String)
+    description = Column(String)
+    price = Column(Float)
+    stock = Column(Integer)
+
+    def __repr__(self):
+        return f"Product({self.name} : ${self.price})"
+
+
 
 """
 FUNCTIONS
@@ -26,25 +46,45 @@ def list_all_products():
   print('All products:')
 
   # LIST ALL code goes here
+  products = session.query(Product).all()
+
+  for product in products:
+      print(product)
 
   print()
   input('Press Enter to return to menu...')
 
 
 def search_for_product():
-  print()
-  search_term = input('Please enter a search term: ')
+    print()
+    search_term = input('Please enter a search term: ')
+
+    # SEARCH code goes here
+    search_filter = Product.name.like('%' + search_term + '%')
+    products = session.query(Product).filter(search_filter).all()
+
+    for product in products:
+        print(product)
   
-  # SEARCH code goes here
-  
-  print()
-  input('Press Enter to return to menu...')
+    print()
+    input('Press Enter to return to menu...')
 
 def add_new_product():
   print()
   print('Add a new product:')
 
   # NEW PRODUCT code goes here
+  new_name = input('Product Name: ')
+  new_desc = input('Description: ')
+  new_price= input('Price: ')
+  new_stock = input('Stock: ')
+
+  new_product = Product(
+      name = new_name, 
+      description = new_desc,
+      price = new_price,
+      stock = new_stock
+  )
 
   print()
   input('Press Enter to return to menu...')
@@ -58,11 +98,21 @@ def delete_product():
   print()
   input('Press Enter to return to menu...')
 
+
+# Other functions go here
+def decorator(statement, decoration):
+    print()
+    print(decoration * len(statement))
+    print(statement)
+    print(decoration * len(statement))
+    print()
+    return ""
+
 """
 MAIN MENU
 """
 
-print('Hello! Welcome to the Cake Shop!')
+decorator('Hello! Welcome to the Cake Shop!', "*")
 
 while True:
   print()
@@ -87,6 +137,8 @@ while True:
   elif user_choice == '5':
     print()
     print('Goodbye!')
+
+    # Exit app
     sys.exit(0)
   else:
     print()
