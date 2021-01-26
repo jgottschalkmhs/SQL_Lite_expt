@@ -34,7 +34,8 @@ class Product(Base):
     stock = Column(Integer)
 
     def __repr__(self):
-        return f"Product({self.name} : ${self.price})"
+        display_price = "{:.2f}".format(self.price)
+        return f"{self.name} : ${display_price}"
 
 
 
@@ -76,8 +77,8 @@ def add_new_product():
   # NEW PRODUCT code goes here
   new_name = input('Product Name: ')
   new_desc = input('Description: ')
-  new_price= input('Price: ')
-  new_stock = input('Stock: ')
+  new_price= num_check('Price: ', float)
+  new_stock = num_check('Stock: ', int)
 
   new_product = Product(
       name = new_name, 
@@ -86,31 +87,69 @@ def add_new_product():
       stock = new_stock
   )
 
+  session.add(new_product)
+  session.commit()
+
   print()
   input('Press Enter to return to menu...')
 
 def delete_product():
-  print()
-  print('Delete product:')
+    print()
+    print('Delete product:')
 
-  # DELETE code goes here
+    # DELETE code goes here
+    products = session.query(Product).all()
 
-  print()
-  input('Press Enter to return to menu...')
+    for product in products:
+        print(f"{product.id}: {product.name}")
+
+    user_input = num_check('Enter ID of the product to delete: ', int)
+
+    # Retrieve product to be deleted
+    product = session.query(Product).filter_by(id = user_input).one()
+
+    session.delete(product)
+    session.commit()
+
+    print()
+    input('Press Enter to return to menu...')
 
 
 # Other functions go here
-def decorator(statement, decoration):
+def decorator(statement: str, decoration: str) -> None:
     print()
     print(decoration * len(statement))
     print(statement)
     print(decoration * len(statement))
     print()
-    return ""
+    
+def num_check(question, num_type):
+
+    if num_type == float:
+        error = "Please enter a number that is more than zero\n"
+    else:
+        error = "Please enter a whole number that is more than zero\n"
+
+    valid = False
+    while not valid:
+
+        try:
+
+            response = num_type(input(question))
+
+            if response > 0:
+                return response
+            else:
+                print(error)
+
+        except ValueError:
+            print(error)
 
 """
 MAIN MENU
 """
+
+# Main routine goes here...
 
 decorator('Hello! Welcome to the Cake Shop!', "*")
 
